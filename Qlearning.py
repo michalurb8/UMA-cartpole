@@ -1,15 +1,16 @@
 import numpy as np
 
+GO_LEFT = 0
+GO_RIGHT = 1
+
 INF = float('inf')
 
 OBS_COUNT = 4
-OBS_MIN = [-4.8, -INF, -0.42, -INF]
-OBS_MAX = [+4.8, +INF, +0.42, +INF]
 
 OBS_BUCKETS = [
-    [-4.8, -2.4, 0, 2.4, 4.8],
+    list(np.arange(-4.8, 4.9, 0.3)),
     [-INF, -1, 0, 1, INF],
-    [-0.42, -0.08, 0, 0.08, 0.42],
+    list(np.arange(-0.42, 0.42, 0.1)),
     [-INF, -1, 0, 1, INF]
 ]
 
@@ -27,20 +28,34 @@ def getState(observations):
                 break
     return states
         
+def learningRate(iteration: int, minRate: float = 0.05) -> float:
+    return max(minRate, min(1.0, 1.0 - np.log10((iteration+1)/25)))
+
+def explorationRate(iteration: int, minRate: float = 0.05) -> float:
+    return max(minRate, min(1.0, 1.0 - np.log10((iteration+1)/25)))
 
 class Qlearning:
     def __init__(self):
         state_shape = [len(thresholds)-1 for thresholds in OBS_BUCKETS]
         state_shape.append(2)
-        print(state_shape)
         self.Qtable = np.zeros(tuple(state_shape))
 
-    def step(self, obs, reward, done, info) -> int:
-        print("OBS:", obs)
+    def update(self, reward, prevObs, newObs, iteration, action, discount = 1):
+        lr = learningRate(iteration)
+        oldState = getState(prevObs)
+        newState = getState(newObs)
+        oldValue = self.Qtable[tuple(oldState)][action]
+
+        newValue = reward + discount * max(self.Qtable[tuple(newState)])
+        finalValue = (1-lr)*oldValue + lr*newValue
+        self.Qtable[tuple(oldState)][action] = finalValue
+
+    def getAction(self, obs, iteration) -> int:
+        er = explorationRate(iteration)
         state = getState(obs)
-        print("STATE:", state)
         left = self.Qtable[tuple(state)][0]
         right = self.Qtable[tuple(state)][1]
-        print("LEFT:", left)
-        print("RIGHT:", right)
-        return 0 if left > right else 1
+        action = GO_LEFT if left > right else GO_RIGHT
+        if left == right or np.random.uniform() < er:
+            action = np.random.randint(2)
+        return int(action)

@@ -12,26 +12,36 @@ def manual_policy(cpos, cvel, pang, pvel): #q learning here -> based on observat
     assert action in [0,1], "Return action must be 0 or 1"
     return action
 
-env = gym.make("CartPole-v1")
-env.reset()
-obs, reward, done, info = env.step(0)
-for _ in range(80):
-    obs, reward, done, info = env.step(manual_policy(*obs))
-    env.render()
-    # if done == True:
-    #     break
-    time.sleep(0.01)
-env.close()
+# n_iterations = 80
+# env = gym.make("CartPole-v1")
+# obs, _ = env.reset()
+# for _ in range(n_iterations):
+#     action = manual_policy(*obs)
+#     obs, reward, done, _ = env.step(action)
 
+#     env.render()
+#     if done == True:
+#         break
+#     time.sleep(0.01)
+# env.close()
+
+n_iterations = 10000
 env = gym.make("CartPole-v1")
-env.reset()
 ql = Qlearning()
-obs, reward, done, info = env.step(0)
-for _ in range(80):
-    action = ql.step(obs, reward, done, info)
-    obs, reward, done, info = env.step(action)
-    env.render()
-    if done == True:
-        break
-    time.sleep(0.01)
+for iter in range(n_iterations):
+    print(iter)
+    prevObs = env.reset()
+    done = False
+
+    while done == False:
+        action = ql.getAction(prevObs, iter)
+        newObs, reward, done, _ = env.step(action)
+        ql.update(reward, prevObs, newObs, iter, action)
+        prevObs = newObs
+
+        if iter > n_iterations*0.9:
+            env.render()
+            time.sleep(0.01)
+        if done == True:
+            break
 env.close()
