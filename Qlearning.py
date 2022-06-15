@@ -9,9 +9,9 @@ OBS_COUNT = 4
 
 OBS_BUCKETS = [
     list(np.arange(-4.8, 4.9, 0.3)),
-    [-INF, -1, 0, 1, INF],
-    list(np.arange(-0.42, 0.42, 0.1)),
-    [-INF, -1, 0, 1, INF]
+    [-INF, *list(np.arange(-5, 5, 0.3)), INF],
+    list(np.arange(-0.42, 0.42, 0.03)),
+    [-INF, *list(np.arange(-5, 5, 0.3)), INF]
 ]
 
 def getState(observations):
@@ -26,6 +26,7 @@ def getState(observations):
             if observation < threshold:
                 states.append(bucket_index)
                 break
+        else: states.append(bucket_index)
     return states
         
 def learningRate(iteration: int, minRate: float = 0.05) -> float:
