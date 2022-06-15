@@ -1,3 +1,3 @@
 import policyTester
 
-policyTester.visualizeManual()
+policyTester.testParameter()

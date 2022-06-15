@@ -14,9 +14,9 @@ def manual_policy(cpos, cvel, pang, pvel): #q learning here -> based on observat
     assert action in [0,1], "Return action must be 0 or 1"
     return action
 
-def testQLearning(n_iterations: int = 10**4):
+def testQLearning(n_iterations: int = 10**4, param = 1):
     env = gym.make("CartPole-v1")
-    ql = Qlearning()
+    ql = Qlearning(param)
     survivalData = []
     for iter in range(n_iterations):
         print(iter)
@@ -39,8 +39,10 @@ def testQLearning(n_iterations: int = 10**4):
     averagedData = [mean(survivalData[ind:ind+window]) for ind in range(len(survivalData)-window+1)]
     plt.xlabel("Liczba iteracji algorytmu QLearning", fontsize=20)
     plt.ylabel("Liczba klatek,\nprzez które wagonik\nutrzymał wahadło w pionie", fontsize=20)
+    plt.title("Discount = " + str(param))
     plt.plot(averagedData)
     plt.show()
+    return averagedData
 
 def testManual(n_iterations: int = 10**4):
     env = gym.make("CartPole-v1")
@@ -87,7 +89,7 @@ def visualizeQLearning(n_iterations=1000):
                 break
     env.close()
 
-def visualizeManual(n_iterations=1000):
+def visualizeManual(n_iterations=100):
     env = gym.make("CartPole-v1")
     ql = Qlearning()
     for iter in range(n_iterations):
@@ -103,3 +105,20 @@ def visualizeManual(n_iterations=1000):
             if done == True:
                 break
     env.close()
+
+def testParameter(n_iterations=800):
+    dis0 = testQLearning(n_iterations, 0.9)
+    dis1 = testQLearning(n_iterations, 1)
+    dis2 = testQLearning(n_iterations, 1.1)
+    dis3 = testQLearning(n_iterations, 1.2)
+    dis4 = testQLearning(n_iterations, 1.3)
+    plt.xlabel("Liczba iteracji algorytmu QLearning", fontsize=20)
+    plt.ylabel("Liczba klatek,\nprzez które wagonik\nutrzymał wahadło w pionie", fontsize=20)
+    plt.title("Zależność efektywności uczenia od paremetru discount")
+    plt.plot(dis0, label="discount = 0.9")
+    plt.plot(dis1, label="discount = 1")
+    plt.plot(dis2, label="discount = 1.1")
+    plt.plot(dis3, label="discount = 1.2")
+    plt.plot(dis4, label="discount = 1.3")
+    plt.legend()
+    plt.show()

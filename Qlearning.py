@@ -36,18 +36,19 @@ def explorationRate(iteration: int, minRate: float = 0.05) -> float:
     return max(minRate, min(1.0, 1.0 - np.log10((iteration+1)/25)))
 
 class Qlearning:
-    def __init__(self):
+    def __init__(self, discount=1):
         state_shape = [len(thresholds)-1 for thresholds in OBS_BUCKETS]
         state_shape.append(2)
         self.Qtable = np.zeros(tuple(state_shape))
+        self.discount = discount if discount else 1
 
-    def update(self, reward, prevObs, newObs, iteration, action, discount = 1):
+    def update(self, reward, prevObs, newObs, iteration, action):
         lr = learningRate(iteration)
         oldState = getState(prevObs)
         newState = getState(newObs)
         oldValue = self.Qtable[tuple(oldState)][action]
 
-        newValue = reward + discount * max(self.Qtable[tuple(newState)])
+        newValue = reward + self.discount * max(self.Qtable[tuple(newState)])
         finalValue = (1-lr)*oldValue + lr*newValue
         self.Qtable[tuple(oldState)][action] = finalValue
 
